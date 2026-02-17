@@ -39,4 +39,11 @@ export async function transactionsRoutes(app: FastifyInstance) {
 
     return reply.status(200).send(transaction);
   });
+
+  app.get("/summary", async (_, reply) => {
+    const sumary = await db("transactions")
+      .sum("amount", { as: "balance" })
+      .first();
+    return reply.status(200).send(sumary);
+  });
 }
