@@ -1,6 +1,7 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import supertest from "supertest";
 import { app } from "../src/app.js";
+import { execSync } from "node:child_process";
 
 describe.only("transaction", () => {
   beforeAll(async () => {
@@ -9,6 +10,11 @@ describe.only("transaction", () => {
 
   afterAll(async () => {
     await app.close();
+  });
+
+  beforeEach(async () => {
+    execSync("yarn knex -- migrate:rollback --all");
+    execSync("yarn knex -- migrate:latest");
   });
 
   it("should create a new transaction", async () => {
@@ -32,12 +38,21 @@ describe.only("transaction", () => {
 
     const cookies = createResponse.get("Set-Cookie") || [];
 
+    await supertest(app.server)
+      .post("/transactions")
+      .send({
+        title: "New Transaction",
+        amount: 50,
+        type: "debit",
+      })
+      .set("Cookie", cookies);
+
     const response = await supertest(app.server)
       .get("/transactions/summary")
       .set("Cookie", cookies);
 
     expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty("balance");
+    expect(response.body).toHaveProperty("balance", 50);
   });
 
   it("should get the list of transactions", async () => {
