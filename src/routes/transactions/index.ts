@@ -11,19 +11,30 @@ export async function transactionsRoutes(app: FastifyInstance) {
   app.post("/", async (request, reply) => {
     const { title, amount, type } = createTransactionSchema.parse(request.body);
 
+    let sessionId = request.cookies.sessionId;
+
+    if (!sessionId) {
+      sessionId = crypto.randomUUID();
+      reply.cookie("sessionId", sessionId, {
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+      });
+    }
+
     const test = await db("transactions")
       .insert({
         id: crypto.randomUUID(),
         title: title,
         amount: amount * (type === "credit" ? 1 : -1),
         type: type,
+        session_id: sessionId,
       })
       .returning("*");
 
     return reply.status(201).send(test[0]);
   });
 
-  app.get("/", async (_, reply) => {
+  app.get("/", async (request, reply) => {
     const transactions = await db("transactions").select("*");
     return reply.status(200).send({ total: transactions.length, transactions });
   });
@@ -40,7 +51,7 @@ export async function transactionsRoutes(app: FastifyInstance) {
     return reply.status(200).send(transaction);
   });
 
-  app.get("/summary", async (_, reply) => {
+  app.get("/summary", async (request, reply) => {
     const sumary = await db("transactions")
       .sum("amount", { as: "balance" })
       .first();
