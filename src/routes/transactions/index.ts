@@ -6,6 +6,7 @@ import {
   createTransactionSchema,
   getTransactionParamsSchema,
 } from "./schemas.js";
+import { checkSessionIdExists } from "../../middlewares/check-session-id-exists.js";
 
 export async function transactionsRoutes(app: FastifyInstance) {
   app.post("/", async (request, reply) => {
@@ -34,27 +35,54 @@ export async function transactionsRoutes(app: FastifyInstance) {
     return reply.status(201).send(test[0]);
   });
 
-  app.get("/", async (request, reply) => {
-    const transactions = await db("transactions").select("*");
-    return reply.status(200).send({ total: transactions.length, transactions });
-  });
+  app.get(
+    "/",
+    { preHandler: [checkSessionIdExists] },
+    async (request, reply) => {
+      const { sessionId } = request.cookies;
 
-  app.get("/:id", async (request, reply) => {
-    const { id } = getTransactionParamsSchema.parse(request.params);
+      const transactions = await db("transactions")
+        .where({ session_id: sessionId })
+        .select("*");
 
-    const transaction = await db("transactions").where({ id }).first("*");
+      return reply
+        .status(200)
+        .send({ total: transactions.length, transactions });
+    },
+  );
 
-    if (!transaction) {
-      return reply.status(404).send({ message: "Transaction not found" });
-    }
+  app.get(
+    "/:id",
+    { preHandler: [checkSessionIdExists] },
+    async (request, reply) => {
+      const { id } = getTransactionParamsSchema.parse(request.params);
 
-    return reply.status(200).send(transaction);
-  });
+      const { sessionId } = request.cookies;
 
-  app.get("/summary", async (request, reply) => {
-    const sumary = await db("transactions")
-      .sum("amount", { as: "balance" })
-      .first();
-    return reply.status(200).send(sumary);
-  });
+      const transaction = await db("transactions")
+        .where({ id, session_id: sessionId })
+        .first("*");
+
+      if (!transaction) {
+        return reply.status(404).send({ message: "Transaction not found" });
+      }
+
+      return reply.status(200).send(transaction);
+    },
+  );
+
+  app.get(
+    "/summary",
+    { preHandler: [checkSessionIdExists] },
+    async (request, reply) => {
+      const { sessionId } = request.cookies;
+
+      const sumary = await db("transactions")
+        .where({ session_id: sessionId })
+        .sum("amount", { as: "balance" })
+        .first();
+
+      return reply.status(200).send(sumary);
+    },
+  );
 }
