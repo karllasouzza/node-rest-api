@@ -1,20 +1,14 @@
 import fastify from "fastify";
-import { db } from "./database.js";
+import { env } from "./env/index.js";
 
 const app = fastify();
 
-app.get("/", async () => {
-  const test = await db("transactions")
-    .insert({
-      id: crypto.randomUUID(),
-      title: "Test",
-      amount: 1000,
-    })
-    .returning("*");
+app.register(() =>
+  import("./routes/transactions.js").then(
+    async (module) => await module.transactionsRoutes(app),
+  ),
+);
 
-  return test;
-});
-
-app.listen({ port: 3000 }).then(() => {
-  console.log("Server is running!");
+app.listen({ port: env.PORT }).then(() => {
+  console.log(`Server is running on port ${env.PORT}!`);
 });
