@@ -9,14 +9,13 @@
     "dev": "tsx watch src/server.ts",
     "knex": "node --import tsx ./node_modules/.bin/knex",
     "lint": "eslint src --ext .ts",
-    "build": "tsup src",
+    "build": "tsup src --format cjs,esm --dts",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@rocketseat/eslint-config": "^2.2.2",
     "@types/node": "^25.2.3",
     "@types/pg": "^8",
     "@types/supertest": "^6.0.3",
