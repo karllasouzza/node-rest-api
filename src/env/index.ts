@@ -1,26 +1,19 @@
 import { config } from "dotenv";
-import { z } from "zod";
+import { envSchema } from "./schema.js";
 
+// Coverage: The else branch is not covered because tests always run with NODE_ENV=test
+/* v8 ignore if -- @preserve */
 if (process.env.NODE_ENV === "test") {
   config({ path: ".env.test" });
-  console.log(process.env.DATABASE_URL)
+  console.log(process.env.DATABASE_URL);
 } else {
   config();
 }
 
-const envSchema = z.object({
-  NODE_ENV: z
-    .enum(["development", "production", "test"])
-    .default("development"),
-  DATABASE_CLIENT: z.string(),
-  DATABASE_URL: z.string(),
-  PORT: z
-    .string()
-    .default("3000")
-    .transform((value) => Number(value)),
-});
-
 const _env = envSchema.safeParse(process.env);
+
+// Coverage: This error throw is not covered because it only happens with invalid env vars
+/* v8 ignore if -- @preserve */
 if (!_env.success) {
   throw new Error(
     `Invalid environment variables: ${JSON.stringify(_env.error.format())}`,

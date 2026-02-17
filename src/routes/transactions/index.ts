@@ -10,7 +10,13 @@ import { checkSessionIdExists } from "../../middlewares/check-session-id-exists.
 
 export async function transactionsRoutes(app: FastifyInstance) {
   app.post("/", async (request, reply) => {
-    const { title, amount, type } = createTransactionSchema.parse(request.body);
+    const result = createTransactionSchema.safeParse(request.body);
+
+    if (!result.success) {
+      return reply.status(400).send({ message: "Invalid request body" });
+    }
+
+    const { title, amount, type } = result.data;
 
     let sessionId = request.cookies.sessionId;
 
@@ -55,8 +61,13 @@ export async function transactionsRoutes(app: FastifyInstance) {
     "/:id",
     { preHandler: [checkSessionIdExists] },
     async (request, reply) => {
-      const { id } = getTransactionParamsSchema.parse(request.params);
+      const result = getTransactionParamsSchema.safeParse(request.params);
 
+      if (!result.success) {
+        return reply.status(404).send({ message: "Transaction not found" });
+      }
+
+      const { id } = result.data;
       const { sessionId } = request.cookies;
 
       const transaction = await db("transactions")
