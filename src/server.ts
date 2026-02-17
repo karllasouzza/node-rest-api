@@ -4,7 +4,14 @@ import { db } from "./database.js";
 const app = fastify();
 
 app.get("/", async () => {
-  const test = await db("sqlite_schema").select("*");
+  const test = await db("transactions")
+    .insert({
+      id: crypto.randomUUID(),
+      title: "Test",
+      amount: 1000,
+    })
+    .returning("*");
+
   return test;
 });
 
