@@ -5,6 +5,7 @@ export async function up(knex: Knex): Promise<void> {
     table.uuid("id").primary();
     table.string("title").notNullable();
     table.decimal("amount", 10, 2).notNullable();
+    table.enu("type", ["credit", "debit"]).notNullable();
     table.timestamp("created_at").defaultTo(knex.fn.now()).notNullable();
   });
 }
