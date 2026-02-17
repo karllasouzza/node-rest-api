@@ -2,10 +2,14 @@
   "name": "node-rest-api",
   "packageManager": "yarn@4.11.0",
   "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "knex": "node --import tsx ./node_modules/.bin/knex",
     "lint": "eslint src --ext .ts",
+    "build": "tsup src",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage"
@@ -14,12 +18,15 @@
     "@eslint/js": "^10.0.1",
     "@rocketseat/eslint-config": "^2.2.2",
     "@types/node": "^25.2.3",
+    "@types/pg": "^8",
     "@types/supertest": "^6.0.3",
     "@vitest/coverage-v8": "^4.0.18",
     "eslint": "^10.0.0",
     "globals": "^17.3.0",
+    "sqlite3": "^5.1.7",
     "supertest": "^7.2.2",
     "tsc": "^2.0.4",
+    "tsup": "^8.5.1",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.0",
@@ -30,7 +37,7 @@
     "dotenv": "^17.3.1",
     "fastify": "^5.7.4",
     "knex": "^3.1.0",
-    "sqlite3": "^5.1.7",
+    "pg": "^8.18.0",
     "zod": "^4.3.6"
   }
 }

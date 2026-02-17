@@ -6,9 +6,12 @@ const { DATABASE_CLIENT, DATABASE_URL } = env;
 
 export const bdConfig: Knex.Config = {
   client: DATABASE_CLIENT,
-  connection: {
-    filename: DATABASE_URL,
-  },
+  connection:
+    env.DATABASE_CLIENT === "sqlite"
+      ? {
+          filename: DATABASE_URL,
+        }
+      : DATABASE_URL, // For PostgreSQL, the connection string is the DATABASE_URL
   useNullAsDefault: true,
   migrations: {
     extension: "ts",
