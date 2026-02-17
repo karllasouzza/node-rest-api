@@ -7,7 +7,7 @@ if (process.env.NODE_ENV === "test") {
   config({ path: ".env.test" });
   console.log(process.env.DATABASE_URL);
 } else if (process.env.NODE_ENV === "production") {
-  config({ path: ".env" });
+  config({ path: ".env.local" });
 } else {
   config();
 }
